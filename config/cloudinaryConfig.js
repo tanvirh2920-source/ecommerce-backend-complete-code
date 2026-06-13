@@ -1,12 +1,7 @@
-import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, "config.env"), override: false });
+dotenv.config({ path: ".env", override: false });
 
 const cloudName = process.env.CLOUDINARY_CLIENT_NAME || process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_CLIENT_API || process.env.CLOUDINARY_API_KEY;

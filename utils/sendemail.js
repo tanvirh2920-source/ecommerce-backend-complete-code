@@ -17,11 +17,20 @@ export const sendEmail = async ({ email, subject, message }) => {
             host: smtpHost,
             port: smtpPort,
             secure: smtpPort === 465,
+            requireTLS: true,
             auth: {
                 user: smtpMail,
                 pass: smtpPassword,
             },
+            tls: {
+                rejectUnauthorized: false,
+            },
+            connectionTimeout: 20000,
+            greetingTimeout: 20000,
+            socketTimeout: 20000,
         });
+
+        await transporter.verify();
 
         const mailOptions = {
             from: smtpMail,

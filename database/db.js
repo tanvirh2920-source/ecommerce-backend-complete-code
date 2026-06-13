@@ -1,33 +1,37 @@
 import dotenv from "dotenv";
 import pkg from "pg";
 
-const { Client } = pkg;
+const { Pool } = pkg;
 
 dotenv.config({ path: ".env", override: false });
 
-// Use DATABASE_URL (Render/production) or individual vars (local)
-const database = process.env.DATABASE_URL
-  ? new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // required for Render PostgreSQL
-    })
-  : new Client({
-      user: process.env.DB_USER || "postgres",
-      host: process.env.DB_HOST || "localhost",
-      database: process.env.DB_NAME || "ecommerce_store",
-      password: process.env.DB_PASSWORD,
-      port: Number(process.env.DB_PORT || 5432),
-      ssl: process.env.DB_HOST?.includes("neon") || process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-    });
+const isNeon = Boolean(process.env.DATABASE_URL || process.env.DB_HOST?.includes("neon"));
+
+const database = new Pool({
+  connectionString: process.env.DATABASE_URL || undefined,
+  user: process.env.DB_USER || "postgres",
+  host: process.env.DB_HOST || "localhost",
+  database: process.env.DB_NAME || "ecommerce_store",
+  password: process.env.DB_PASSWORD,
+  port: Number(process.env.DB_PORT || 5432),
+  ssl: isNeon ? { rejectUnauthorized: false } : false,
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 20000,
+});
+
+database.on("error", (err) => {
+  console.error("Unexpected DB pool error:", err);
+});
 
 export const connectDB = async () => {
-    try {
-        await database.connect();
-        console.log("Database connected successfully");
-    } catch (error) {
-        console.error("Database connection failed:", error);
-        throw error;
-    }
+  try {
+    await database.query("SELECT 1");
+    console.log("Database connected successfully");
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    throw error;
+  }
 };
 
 export default database;
