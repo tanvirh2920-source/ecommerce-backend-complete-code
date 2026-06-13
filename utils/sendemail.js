@@ -12,23 +12,34 @@ export const sendEmail = async ({ email, subject, message }) => {
             throw new Error("SMTP_MAIL and SMTP_PASSWORD must be set in environment variables.");
         }
 
-        const transporter = nodeMailer.createTransport({
-            service: smtpService,
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort === 465,
-            requireTLS: true,
-            auth: {
-                user: smtpMail,
-                pass: smtpPassword,
-            },
-            tls: {
-                rejectUnauthorized: false,
-            },
-            connectionTimeout: 20000,
-            greetingTimeout: 20000,
-            socketTimeout: 20000,
-        });
+        const transporter = nodeMailer.createTransport(
+            smtpService.toLowerCase() === "gmail"
+                ? {
+                    service: "gmail",
+                    auth: {
+                        user: smtpMail,
+                        pass: smtpPassword,
+                    },
+                    connectionTimeout: 20000,
+                    greetingTimeout: 20000,
+                    socketTimeout: 20000,
+                }
+                : {
+                    host: smtpHost,
+                    port: smtpPort,
+                    secure: smtpPort === 465,
+                    auth: {
+                        user: smtpMail,
+                        pass: smtpPassword,
+                    },
+                    tls: {
+                        rejectUnauthorized: false,
+                    },
+                    connectionTimeout: 20000,
+                    greetingTimeout: 20000,
+                    socketTimeout: 20000,
+                },
+        );
 
         await transporter.verify();
 
