@@ -22,7 +22,8 @@ export const sendEmail = async ({ email, subject, message }) => {
                     },
                     connectionTimeout: 20000,
                     greetingTimeout: 20000,
-                    socketTimeout: 20000,
+                    socketTimeout: 30000,
+                    timeout: 30000,
                 }
                 : {
                     host: smtpHost,
@@ -37,7 +38,8 @@ export const sendEmail = async ({ email, subject, message }) => {
                     },
                     connectionTimeout: 20000,
                     greetingTimeout: 20000,
-                    socketTimeout: 20000,
+                    socketTimeout: 30000,
+                    timeout: 30000,
                 },
         );
 
@@ -48,7 +50,13 @@ export const sendEmail = async ({ email, subject, message }) => {
             html: message,
         };
 
-        const result = await transporter.sendMail(mailOptions);
+        const result = await Promise.race([
+            transporter.sendMail(mailOptions),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("SMTP timeout after 30 seconds")), 30000),
+            ),
+        ]);
+
         console.log("Email sent successfully:", result.messageId);
         return result;
     } catch (error) {
