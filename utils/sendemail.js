@@ -41,8 +41,6 @@ export const sendEmail = async ({ email, subject, message }) => {
                 },
         );
 
-        await transporter.verify();
-
         const mailOptions = {
             from: smtpMail,
             to: email,
